@@ -4,17 +4,29 @@ import TitlePage from '../components/TitlePage';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { createUserAction } from '../store/modules/userSlice';
+import AlertFeedback, { AlertFeedbackType } from '../components/AlertFeedback';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
-
-  const validEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+  const [valid, setValid] = useState<boolean>(false);
 
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [repeatPassword, setRepeatPassword] = useState<string>('');
+
+  const [openAlert, setOpenAlert] = useState(false);
+  const [message, setMessage] = useState('');
+  const [feedback, setFeedback] = useState(AlertFeedbackType.success);
+
+  useEffect(() => {
+    if (name.length < 3 || email.length < 4 || password.length < 4 || repeatPassword.length < 4) {
+      setValid(true);
+    } else {
+      setValid(false);
+    }
+  }, [name, email, password, repeatPassword]);
 
   const createUserApi = async () => {
     const result = await dispatch(
@@ -25,14 +37,16 @@ const Index: React.FC = () => {
         repeatPassword
       })
     );
-    handleClear();
-  };
-
-  const handleClear = () => {
-    setName('');
-    setEmail('');
-    setPassword('');
-    setRepeatPassword('');
+    if (!result.payload.ok) {
+      setFeedback(AlertFeedbackType.error);
+      setOpenAlert(true);
+      setMessage(result.payload.message);
+      return;
+    }
+    setFeedback(AlertFeedbackType.success);
+    setOpenAlert(true);
+    setMessage(result.payload.message);
+    navigate('/login');
   };
 
   return (
@@ -90,7 +104,7 @@ const Index: React.FC = () => {
           />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="contained" color="primary" size="large" onClick={createUserApi}>
+          <Button variant="contained" color="primary" size="large" onClick={createUserApi} disabled={valid}>
             Cadastre-se
           </Button>
           <Grid item xs={12} sx={{ marginTop: '10px' }}>
@@ -101,6 +115,12 @@ const Index: React.FC = () => {
             </Link>
           </Grid>
         </Grid>
+        <AlertFeedback
+          message={message}
+          open={openAlert}
+          close={() => setOpenAlert(false)}
+          feedback={feedback}
+        ></AlertFeedback>
       </Grid>
     </>
   );

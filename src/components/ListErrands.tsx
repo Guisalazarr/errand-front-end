@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Divider from '@mui/material/Divider';
@@ -11,13 +11,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import DialogConfirm from './DaialogConfirm';
-import ErrandType from '../types/ErrandType';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { deleteErrandAction } from '../store/modules/errandSlice';
+import { deleteErrandAction, updateErrandAction } from '../store/modules/errandSlice';
+import { Errand, ErrandStatus } from '../models/errands.models';
+import AlertFeedback, { AlertFeedbackType } from './AlertFeedback';
+import TaskIcon from '@mui/icons-material/Task';
 
-const ListErrands = () => {
-  const errandsRedux = useSelector((state: RootState) => state.errands);
+interface listErrandsProps {
+  data: Errand[];
+}
+
+const ListErrands = (props: listErrandsProps) => {
   const userlogged = useSelector((state: RootState) => state.login);
 
   const dispatch = useDispatch<any>();
@@ -25,7 +30,11 @@ const ListErrands = () => {
   const [idDelete, setIdDelete] = useState<string>('');
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [dialogItem, setdialogItem] = useState<ErrandType>();
+  const [dialogItem, setdialogItem] = useState<Errand>();
+
+  const [openAlert, setOpenAlert] = useState(false);
+  const [message, setMessage] = useState('');
+  const [feedback, setFeedback] = useState(AlertFeedbackType.success);
 
   const deleteErrandApi = async () => {
     const result = await dispatch(
@@ -35,20 +44,41 @@ const ListErrands = () => {
       })
     );
     setOpenDialog(false);
+
+    if (result.payload.ok) {
+      setFeedback(AlertFeedbackType.success);
+      setOpenAlert(true);
+      setMessage(result.payload.message);
+    }
   };
 
-  const confirmDelete = (errand: ErrandType) => {
+  const filedErrandApi = async (errand: Errand) => {
+    const result = await dispatch(
+      updateErrandAction({
+        id: userlogged.id,
+        errandId: errand.id,
+        status: ErrandStatus.archived
+      })
+    );
+    if (result.payload.ok) {
+      setMessage('Recado arquivado com sucesso');
+      setFeedback(AlertFeedbackType.success);
+      setOpenAlert(true);
+    }
+  };
+
+  const confirmDelete = (errand: Errand) => {
     setOpenDialog(true);
     setdialogItem(errand);
     setIdDelete(errand.id);
   };
 
-  const handleEdit = (errand: ErrandType) => {
+  const handleEdit = (errand: Errand) => {
     navigate(`/errands/${errand.id}`);
   };
 
   const listMemo = useMemo(() => {
-    return errandsRedux.map((errand, index: number) => {
+    return props.data.map((errand, index) => {
       return (
         <React.Fragment key={errand.id}>
           <ListItem
@@ -56,12 +86,10 @@ const ListErrands = () => {
             disableGutters
             secondaryAction={
               <>
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  sx={{ marginRight: '10px' }}
-                  onClick={() => handleEdit(errand)}
-                >
+                <IconButton sx={{ marginRight: '10px' }} onClick={() => filedErrandApi(errand)}>
+                  <TaskIcon />
+                </IconButton>
+                <IconButton sx={{ marginRight: '10px' }} onClick={() => handleEdit(errand)}>
                   <EditIcon color="secondary" />
                 </IconButton>
 
@@ -87,12 +115,19 @@ const ListErrands = () => {
         </React.Fragment>
       );
     });
-  }, [errandsRedux]);
+  }, [props.data]);
 
   return (
     <>
-      <List>{listMemo} </List>
-
+      <List>
+        {props.data.length ? (
+          listMemo
+        ) : (
+          <Typography variant="h6" sx={{ mt: '20px' }}>
+            Nenhum recado encontrado.
+          </Typography>
+        )}
+      </List>
       {
         <DialogConfirm
           actionConfirm={deleteErrandApi}
@@ -103,6 +138,13 @@ const ListErrands = () => {
           description={dialogItem ? dialogItem.description : ''}
         />
       }
+      <AlertFeedback
+        message={message}
+        open={openAlert}
+        close={() => setOpenAlert(false)}
+        feedback={feedback}
+      ></AlertFeedback>
+      ;
     </>
   );
 };

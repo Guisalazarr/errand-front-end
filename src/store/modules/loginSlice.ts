@@ -1,22 +1,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ApiServiceUser } from '../../service/api.user';
-
-interface LoginProps {
-  email: string;
-  password: string;
-}
+import { LoginProps, UserLogged } from '../../models/login.models';
 
 export const loginAction = createAsyncThunk('user/login', async (props: LoginProps) => {
-  const result = await ApiServiceUser.login(props.email, props.password);
+  const result = await ApiServiceUser.login(props);
 
   return result;
 });
 
-interface UserLoggedState {
-  id: string;
-  name: string;
-}
-const initialState: UserLoggedState = {
+const initialState: UserLogged = {
   id: '',
   name: ''
 };
@@ -24,18 +16,14 @@ const initialState: UserLoggedState = {
 export const loginSlice = createSlice({
   name: 'login',
   initialState,
-  reducers: {},
+  reducers: {
+    clearUserLogged: () => initialState
+  },
   extraReducers: builder => {
-    builder.addCase(loginAction.pending, () => {
-      console.log('loginErrand iniciou...');
-    });
-
     builder.addCase(loginAction.fulfilled, (_, action) => {
-      console.log('Finalizou');
-
       return action.payload.data ?? {};
     });
   }
 });
-
+export const { clearUserLogged } = loginSlice.actions;
 export default loginSlice.reducer;

@@ -17,10 +17,15 @@ import { useNavigate } from 'react-router-dom';
 import routes from '../routes/routes';
 
 import HoverNavbarStled from './HoverNavbarStyled';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { clearUserLogged } from '../store/modules/loginSlice';
 
 const settings = ['Sair'];
 
 function ResponsiveAppBar() {
+  const userlogged = useSelector((state: RootState) => state.login);
+  const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -43,6 +48,7 @@ function ResponsiveAppBar() {
   };
 
   const logout = () => {
+    dispatch(clearUserLogged());
     navigate('/login');
   };
 
@@ -108,13 +114,14 @@ function ResponsiveAppBar() {
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
-
               fontWeight: 700,
               letterSpacing: '.1rem',
               color: 'black',
               textDecoration: 'none'
             }}
-          ></Typography>
+          >
+            {userlogged.name}
+          </Typography>
           <Box sx={{ flexGrow: 0, marginRight: '10px' }}>
             <Tooltip title="Menu">
               <IconButton onClick={handleOpenUserMenu}>

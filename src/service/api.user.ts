@@ -1,7 +1,9 @@
 import axios from 'axios';
+import { CreateUserProps } from '../models/user.models';
+import { LoginProps } from '../models/login.models';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3333'
+  baseURL: process.env.REACT_APP_BASE_URL
 });
 
 interface ApiResponse {
@@ -11,31 +13,18 @@ interface ApiResponse {
 }
 
 export class ApiServiceUser {
-  public static async login(email: string, password: string): Promise<ApiResponse> {
+  public static async login(props: LoginProps): Promise<ApiResponse> {
     try {
-      const result = await api.post('/user/login', {
-        email,
-        password
-      });
+      const result = await api.post('/user/login', props);
       return result.data;
     } catch (error: any) {
       return error.response.data;
     }
   }
 
-  public static async create(
-    name: string,
-    email: string,
-    password: string,
-    repeatPassword: string
-  ): Promise<ApiResponse> {
+  public static async createUser(props: CreateUserProps): Promise<ApiResponse> {
     try {
-      const result = await api.post('/user', {
-        name,
-        email,
-        password,
-        repeatPassword
-      });
+      const result = await api.post('/user', props);
       return result.data;
     } catch (error: any) {
       return error.response.data;

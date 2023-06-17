@@ -5,47 +5,60 @@ import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import { loginAction } from '../store/modules/loginSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { RootState } from '../store';
+import AlertFeedback, { AlertFeedbackType } from '../components/AlertFeedback';
 
 const Login: React.FC = () => {
+  const userlogged = useSelector((state: RootState) => state.login);
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
 
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [valid, setValid] = useState<boolean>(false);
+
+  const [openAlert, setOpenAlert] = useState(false);
+  const [message, setMessage] = useState('');
+  const [feedback, setFeedback] = useState(AlertFeedbackType.success);
+
+  const validEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+
+  useEffect(() => {
+    if (userlogged.id) {
+      navigate('/home');
+    }
+  }, [userlogged]);
+
+  useEffect(() => {
+    if (email.length < 3 || password.length < 4) {
+      setValid(true);
+    } else {
+      setValid(false);
+    }
+  }, [email, password]);
 
   const loginUserApi = async () => {
+    if (!email.match(validEmail)) {
+      setFeedback(AlertFeedbackType.error);
+      setOpenAlert(true);
+      setMessage('E-mail is not valid');
+      return;
+    }
+
     const result = await dispatch(
       loginAction({
         email,
         password
       })
     );
-    console.log(result.payload.ok);
-    if (result.payload.ok) {
-      navigate('/home');
+    if (!result.payload.ok) {
+      setFeedback(AlertFeedbackType.error);
+      setOpenAlert(true);
+      setMessage(result.payload.message);
     }
   };
-
-  // const handleClear = () => {
-  //   setEmail('');
-  //   setPassword('');
-  // };
-
-  // const goHome = () => {
-  //   const findUser = registerRedux.find(item => {
-  //     return item.email === email && item.password === password;
-  //   });
-  //   if (findUser) {
-  //     dispatch(createUserLogged({ name: findUser.name, email: findUser.email }));
-  //     dispatch(setAllErrands(findUser ? findUser.errands : []));
-  //     navigate('/home');
-  //   } else {
-  //     dispatch(createAlertSlice({ open: true, msg: 'Usuário ou senha inválida!', feedback: 'error' }));
-  //   }
-  //   handleClear();
-  // };
 
   return (
     <Grid container spacing={2}>
@@ -92,17 +105,30 @@ const Login: React.FC = () => {
         />
       </Grid>
       <Grid item xs={12}>
-        <Button variant="contained" size="large" sx={{ paddingX: '80px' }} color="primary" onClick={loginUserApi}>
+        <Button
+          variant="contained"
+          size="large"
+          sx={{ paddingX: '80px' }}
+          color="primary"
+          onClick={loginUserApi}
+          disabled={valid}
+        >
           Entrar
         </Button>
       </Grid>
       <Grid item xs={12}>
-        <Link color="secondary" style={{ cursor: 'pointer' }}>
+        <Link color="secondary" style={{ cursor: 'pointer' }} onClick={() => navigate('/register')}>
           <Typography variant="body2" color="black">
             CADASTRE-SE
           </Typography>
         </Link>
       </Grid>
+      <AlertFeedback
+        message={message}
+        open={openAlert}
+        close={() => setOpenAlert(false)}
+        feedback={feedback}
+      ></AlertFeedback>
     </Grid>
   );
 };
