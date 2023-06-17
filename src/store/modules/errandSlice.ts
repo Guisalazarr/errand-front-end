@@ -14,7 +14,7 @@ export const listErrandsAction = createAsyncThunk('errands/list', async (props: 
 
   return result;
 });
-export const searchErrandAction = createAsyncThunk('errands/list', async (props: SearchErrandProps) => {
+export const searchErrandAction = createAsyncThunk('errands/search', async (props: SearchErrandProps) => {
   const result = await ApiServiceErrand.searchErrand(props);
 
   return result;
@@ -44,6 +44,9 @@ export const errandSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder.addCase(listErrandsAction.fulfilled, (_, action) => {
+      return action.payload.data ?? [];
+    });
+    builder.addCase(searchErrandAction.fulfilled, (_, action) => {
       return action.payload.data ?? [];
     });
     builder.addCase(createErrandAction.fulfilled, (_, action) => {
