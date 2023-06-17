@@ -7,12 +7,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { createErrandAction, updateErrandAction } from '../store/modules/errandSlice';
 import AlertFeedback, { AlertFeedbackType } from '../components/AlertFeedback';
+import { createTitle } from '../store/modules/titleSlice';
 
 const Errands: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
 
   const userlogged = useSelector((state: RootState) => state.login);
+  const titleRedux = useSelector((state: RootState) => state.title);
+
   const { errandId } = useParams();
 
   const [title, setTitle] = useState<string>('');
@@ -32,6 +35,9 @@ const Errands: React.FC = () => {
     }
     if (errandId) {
       setIsEdit(true);
+      dispatch(createTitle({ title: 'Edite o recado' }));
+    } else {
+      dispatch(createTitle({ title: 'Cadastre um recado' }));
     }
   }, []);
 
@@ -44,17 +50,15 @@ const Errands: React.FC = () => {
   }, [title, description]);
 
   const createErrandApi = async () => {
-    const user = {
-      id: userlogged.id,
-      title,
-      description
-    };
-    const result = await dispatch(createErrandAction(user));
+    const result = await dispatch(
+      createErrandAction({
+        id: userlogged.id,
+        title,
+        description
+      })
+    );
     if (result.payload.ok) {
-      setFeedback(AlertFeedbackType.success);
-      setOpenAlert(true);
-      setMessage(result.payload.message);
-      navigate('/home');
+      returnSuccess(result.payload.message);
     }
   };
 
@@ -62,15 +66,10 @@ const Errands: React.FC = () => {
     if (!errandId) {
       return;
     }
-
-    const userUpdate = { id: userlogged.id, errandId, title, description };
-    const result = await dispatch(updateErrandAction(userUpdate));
+    const result = await dispatch(updateErrandAction({ id: userlogged.id, errandId, title, description }));
 
     if (result.payload.ok) {
-      setFeedback(AlertFeedbackType.success);
-      setOpenAlert(true);
-      setMessage(result.payload.message);
-      navigate('/home');
+      returnSuccess(result.payload.message);
     }
   };
 
@@ -79,10 +78,20 @@ const Errands: React.FC = () => {
     setDescription('');
   };
 
+  const returnSuccess = (message: string) => {
+    setFeedback(AlertFeedbackType.success);
+    setOpenAlert(true);
+    setMessage(message);
+
+    setTimeout(() => {
+      navigate('/home');
+    }, 1000);
+  };
+
   return (
     <>
       <Grid container spacing={1}>
-        <TitlePage title={isEdit ? 'Edite o recado' : 'Cadastre um novo recado'} />
+        <TitlePage title={titleRedux.title} />
 
         <Grid item xs={12}>
           <TextField

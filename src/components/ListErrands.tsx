@@ -17,9 +17,11 @@ import { deleteErrandAction, updateErrandAction } from '../store/modules/errandS
 import { Errand, ErrandStatus } from '../models/errands.models';
 import AlertFeedback, { AlertFeedbackType } from './AlertFeedback';
 import TaskIcon from '@mui/icons-material/Task';
+import { createTitle } from '../store/modules/titleSlice';
 
 interface listErrandsProps {
   data: Errand[];
+  title?: string;
 }
 
 const ListErrands = (props: listErrandsProps) => {
@@ -46,25 +48,38 @@ const ListErrands = (props: listErrandsProps) => {
     setOpenDialog(false);
 
     if (result.payload.ok) {
-      setFeedback(AlertFeedbackType.success);
-      setOpenAlert(true);
-      setMessage(result.payload.message);
+      returnSuccess(result.payload.message);
     }
   };
 
   const filedErrandApi = async (errand: Errand) => {
+    let status = errand.status;
+    let message = '';
+
+    if (status === ErrandStatus.unarchived) {
+      status = ErrandStatus.archived;
+      message = 'Errand archived sucessfully';
+    } else {
+      status = ErrandStatus.unarchived;
+      message = 'Errand unarchived sucessfully';
+    }
     const result = await dispatch(
       updateErrandAction({
         id: userlogged.id,
         errandId: errand.id,
-        status: ErrandStatus.archived
+        status: status
       })
     );
     if (result.payload.ok) {
-      setMessage('Recado arquivado com sucesso');
-      setFeedback(AlertFeedbackType.success);
-      setOpenAlert(true);
+      returnSuccess(message);
+      dispatch(createTitle({ title: 'Lista de Recados' }));
     }
+  };
+
+  const returnSuccess = (message: string) => {
+    setFeedback(AlertFeedbackType.success);
+    setMessage(message);
+    setOpenAlert(true);
   };
 
   const confirmDelete = (errand: Errand) => {

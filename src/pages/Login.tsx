@@ -9,14 +9,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import AlertFeedback, { AlertFeedbackType } from '../components/AlertFeedback';
+import { createTitle } from '../store/modules/titleSlice';
 
 const Login: React.FC = () => {
   const userlogged = useSelector((state: RootState) => state.login);
+  const titleRedux = useSelector((state: RootState) => state.title);
+
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
 
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+
   const [valid, setValid] = useState<boolean>(false);
 
   const [openAlert, setOpenAlert] = useState(false);
@@ -26,13 +30,17 @@ const Login: React.FC = () => {
   const validEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
   useEffect(() => {
+    dispatch(createTitle({ title: 'Login' }));
+  }, []);
+
+  useEffect(() => {
     if (userlogged.id) {
       navigate('/home');
     }
   }, [userlogged]);
 
   useEffect(() => {
-    if (email.length < 3 || password.length < 4) {
+    if (email.length < 4 || password.length < 4) {
       setValid(true);
     } else {
       setValid(false);
@@ -41,9 +49,7 @@ const Login: React.FC = () => {
 
   const loginUserApi = async () => {
     if (!email.match(validEmail)) {
-      setFeedback(AlertFeedbackType.error);
-      setOpenAlert(true);
-      setMessage('E-mail is not valid');
+      returnError('E-mail is not valid');
       return;
     }
 
@@ -54,16 +60,20 @@ const Login: React.FC = () => {
       })
     );
     if (!result.payload.ok) {
-      setFeedback(AlertFeedbackType.error);
-      setOpenAlert(true);
-      setMessage(result.payload.message);
+      returnError(result.payload.message);
     }
+  };
+
+  const returnError = (message: string) => {
+    setFeedback(AlertFeedbackType.error);
+    setOpenAlert(true);
+    setMessage(message);
   };
 
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
-        <TitlePage title={'LOGIN'}></TitlePage>
+        <TitlePage title={titleRedux.title}></TitlePage>
       </Grid>
       <Grid item xs={4}>
         <IconButton aria-label="delete" size="large">

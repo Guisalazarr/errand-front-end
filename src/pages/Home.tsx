@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react';
 import Container from '@mui/material/Container/Container';
 import TitlePage from '../components/TitlePage';
@@ -11,23 +10,26 @@ import { listErrandsAction, searchErrandAction } from '../store/modules/errandSl
 import { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { ErrandStatus } from '../models/errands.models';
+import { createTitle } from '../store/modules/titleSlice';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
 
   const userlogged = useSelector((state: RootState) => state.login);
+  const titleRedux = useSelector((state: RootState) => state.title);
   const errandsRedux = useSelector((state: RootState) => state.errands);
+
   const [search, setSearch] = useState('');
   const [valid, setValid] = useState(false);
-  const [titlePage, setTitlePage] = useState('Lista de recados');
 
   useEffect(() => {
+    dispatch(createTitle({ title: 'Lista de recados' }));
     const isLogged = !!userlogged.id;
     if (!isLogged) {
       navigate('/login');
     }
-    listErrandApi(ErrandStatus.unarchived);
+    listErrandApi(ErrandStatus.unarchived, 'Lista de recados');
   }, []);
 
   useEffect(() => {
@@ -38,13 +40,14 @@ const Home: React.FC = () => {
     }
   }, [search]);
 
-  const listErrandApi = async (status: ErrandStatus) => {
+  const listErrandApi = async (status: ErrandStatus, titlePageProps?: string) => {
     await dispatch(
       listErrandsAction({
         id: userlogged.id,
         status: status
       })
     );
+    dispatch(createTitle({ title: titlePageProps }));
   };
 
   const searchErrandApi = async (title: string) => {
@@ -59,7 +62,7 @@ const Home: React.FC = () => {
     <>
       <Container>
         <Grid item xs={12}>
-          <TitlePage title={titlePage} />
+          <TitlePage title={titleRedux.title} />
         </Grid>
         <Grid container spacing={2} sx={{ mt: '10px' }}>
           <Grid item xs={10}>
@@ -96,13 +99,18 @@ const Home: React.FC = () => {
               variant="contained"
               color="secondary"
               fullWidth
-              onClick={() => listErrandApi(ErrandStatus.unarchived)}
+              onClick={() => listErrandApi(ErrandStatus.unarchived, 'Lista de recados')}
             >
               Recados
             </Button>
           </Grid>
           <Grid item xs={6}>
-            <Button variant="contained" color="primary" fullWidth onClick={() => listErrandApi(ErrandStatus.archived)}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={() => listErrandApi(ErrandStatus.archived, 'Arquivados')}
+            >
               Arquivados
             </Button>
           </Grid>
