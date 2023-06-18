@@ -159,7 +159,6 @@ const ListErrands = (props: listErrandsProps) => {
         close={() => setOpenAlert(false)}
         feedback={feedback}
       ></AlertFeedback>
-      ;
     </>
   );
 };
