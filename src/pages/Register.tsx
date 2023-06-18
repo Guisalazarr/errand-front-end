@@ -2,15 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Button, Grid, Link, TextField, Typography } from '@mui/material';
 import TitlePage from '../components/TitlePage';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { createUserAction } from '../store/modules/userSlice';
 import AlertFeedback, { AlertFeedbackType } from '../components/AlertFeedback';
-import { createTitle } from '../store/modules/titleSlice';
-import { RootState } from '../store';
 
 const Index: React.FC = () => {
-  const titleRedux = useSelector((state: RootState) => state.title);
-
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const [valid, setValid] = useState<boolean>(false);
@@ -23,10 +19,6 @@ const Index: React.FC = () => {
   const [openAlert, setOpenAlert] = useState(false);
   const [message, setMessage] = useState('');
   const [feedback, setFeedback] = useState(AlertFeedbackType.success);
-
-  useEffect(() => {
-    dispatch(createTitle({ title: 'Criar Conta' }));
-  }, []);
 
   useEffect(() => {
     if (name.length < 3 || email.length < 4 || password.length < 4 || repeatPassword.length < 4) {
@@ -66,7 +58,7 @@ const Index: React.FC = () => {
     <>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <TitlePage title={titleRedux.title}></TitlePage>
+          <TitlePage title={'Criar Conta'}></TitlePage>
         </Grid>
         <Grid item xs={12}>
           <TextField

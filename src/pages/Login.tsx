@@ -9,11 +9,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import AlertFeedback, { AlertFeedbackType } from '../components/AlertFeedback';
-import { createTitle } from '../store/modules/titleSlice';
 
 const Login: React.FC = () => {
   const userlogged = useSelector((state: RootState) => state.login);
-  const titleRedux = useSelector((state: RootState) => state.title);
 
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
@@ -28,10 +26,6 @@ const Login: React.FC = () => {
   const [feedback, setFeedback] = useState(AlertFeedbackType.success);
 
   const validEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-
-  useEffect(() => {
-    dispatch(createTitle({ title: 'Login' }));
-  }, []);
 
   useEffect(() => {
     if (userlogged.id) {
@@ -73,7 +67,7 @@ const Login: React.FC = () => {
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
-        <TitlePage title={titleRedux.title}></TitlePage>
+        <TitlePage title={'Login'}></TitlePage>
       </Grid>
       <Grid item xs={4}>
         <IconButton aria-label="delete" size="large">
