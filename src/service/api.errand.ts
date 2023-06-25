@@ -56,7 +56,7 @@ export class ApiServiceErrand {
         description: props.description,
         status: props.status
       });
-      console.log(result.data);
+
       return result.data;
     } catch (error: any) {
       return error.response.data;

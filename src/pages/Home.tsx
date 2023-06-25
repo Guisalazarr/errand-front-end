@@ -65,7 +65,7 @@ const Home: React.FC = () => {
           <TitlePage title={titleRedux.title} />
         </Grid>
         <Grid container spacing={2} sx={{ mt: '10px' }}>
-          <Grid item xs={10}>
+          <Grid item xs={9}>
             <FormControl fullWidth variant="outlined" color="secondary">
               <OutlinedInput
                 id="outlined-adornment-password"
@@ -82,7 +82,7 @@ const Home: React.FC = () => {
               />
             </FormControl>
           </Grid>
-          <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
               sx={{ height: '100%' }}
