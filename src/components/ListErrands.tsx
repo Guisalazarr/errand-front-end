@@ -55,7 +55,6 @@ const ListErrands = (props: listErrandsProps) => {
   const filedErrandApi = async (errand: Errand) => {
     let status = errand.status;
     let message = '';
-
     if (status === ErrandStatus.unarchived) {
       status = ErrandStatus.archived;
       message = 'Errand archived sucessfully';
@@ -63,6 +62,7 @@ const ListErrands = (props: listErrandsProps) => {
       status = ErrandStatus.unarchived;
       message = 'Errand unarchived sucessfully';
     }
+
     const result = await dispatch(
       updateErrandAction({
         id: userlogged.id,
